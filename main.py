@@ -34,28 +34,54 @@ def make_huffman_tree(f):
     # create a new node z with x and y as children,
     # insert z into the priority queue (using an empty character "")
     while (p.qsize() > 1):
-        # TODO
+        x = p.get()
+        y = p.get()
+        z = TreeNode(left=x, right=y, data=(x.data[0] + y.data[0], ""))
+        p.put(z)
         
     # return root of the tree
     return p.get()
 
 # perform a traversal on the prefix code tree to collect all encodings
 def get_code(node, prefix="", code={}):
-    # TODO - perform a tree traversal and collect encodings for leaves in code
-    pass
+  if node is not None:
+      if node.data[1] != "":
+          code[node.data[1]] = prefix
+      get_code(node.left, prefix + "0", code)
+      get_code(node.right, prefix + "1", code)
+  return code
 
 # given an alphabet and frequencies, compute the cost of a fixed length encoding
 def fixed_length_cost(f):
-    # TODO
-    pass
+  alphabet_size = len(f)
+  total_chars = sum(f.values())
+  return alphabet_size * math.ceil(math.log2(total_chars))
 
 # given a Huffman encoding and character frequencies, compute cost of a Huffman encoding
 def huffman_cost(C, f):
-    # TODO
-    pass
+  total_cost = 0
+  for char, freq in f.items():
+      total_cost += len(C[char]) * freq
+  return total_cost
 
-f = get_frequencies('f1.txt')
-print("Fixed-length cost:  %d" % fixed_length_cost(f))
-T = make_huffman_tree(f)
-C = get_code(T)
-print("Huffman cost:  %d" % huffman_cost(C, f))
+text_files = ['alice29.txt', 'asyoulik.txt', 'f1.txt', 'fields.c', 'grammar.lsp']
+
+print("{:<15} {:<15} {:<15} {:<15} {:<15} {:<15}".format("File", "Alphabet Size", "Fixed Length", "Huffman Cost", "Ratio (Huffman/Fixed)"))
+for file in text_files:
+    f = get_frequencies(file)
+    alphabet_size = len(f)
+    fixed_len_cost = fixed_length_cost(f)
+    T = make_huffman_tree(f)
+    C = get_code(T)
+    huffman_cost_value = huffman_cost(C, f)
+    ratio = huffman_cost_value / fixed_len_cost
+    print("{:<15} {:<15} {:<15} {:<15} {:<15} {:<15}".format(file, alphabet_size, fixed_len_cost, huffman_cost_value, ratio))
+
+# Calculate the expected cost of a Huffman encoding for the same frequency for each character
+equal_frequency = {'A': 10, 'B': 10, 'C': 10, 'D': 10, 'E': 10}
+T_equal = make_huffman_tree(equal_frequency)
+C_equal = get_code(T_equal)
+huffman_cost_equal = huffman_cost(C_equal, equal_frequency)
+print("Expected Huffman Cost for Equal Frequencies: %d" % huffman_cost_equal)
+
+
